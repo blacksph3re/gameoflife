@@ -36,7 +36,7 @@ bool HelpText::init(Board& board, Snake& snake, float& updateMultiplicator)
 	textToRender.emplace_back(sf::Text("Load RLE File", defaultFont), [&](){
 		char const *x[] = {"*.rle"};
 		try{
-			RLEParser::parseFile(tinyfd_openFileDialog("Open RLE", "", 1, x , "RLE Files", 0), board);
+			RLEParser::parseFile(tinyfd_openFileDialog("Open RLE", NULL, 1, x , "RLE Files", 0), board);
 		}catch(...){}
 	});
 
