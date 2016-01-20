@@ -9,6 +9,7 @@
 #include <fstream>
 #include <regex>
 #include <iostream>
+#include <sstream>
 
 bool RLEParser::parseFile(std::string filename, Board& board)
 {
