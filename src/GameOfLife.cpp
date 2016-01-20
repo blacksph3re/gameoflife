@@ -11,13 +11,14 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string>
-#include <experimental/optional>
+
 #include "Board.h"
 #include "HelpText.h"
 #include "Snake.h"
 #include "RLEParser.h"
 
 #ifdef PARSE_CMD
+#include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 #endif
@@ -26,10 +27,11 @@ int main(int argc, char* argv[]) {
 	// Use boost to read command line parameters, if wanted
 	int boardsize = 50;
 	float updateMultiplicator=1.0f;
-	std::experimental::optional<std::string> rleFile;
 
 
 #ifdef PARSE_CMD
+	boost::optional<std::string> rleFile;
+
 	try
 	{
 		po::options_description desc("Allowed options");
@@ -84,9 +86,10 @@ int main(int argc, char* argv[]) {
 	HelpText helpText;
 	helpText.init(board, snake, updateMultiplicator);
 
+#ifdef PARSE_CMD
 	if(rleFile)
 		RLEParser::parseFile(*rleFile, board);
-
+#endif
 
 	sf::Clock snakeTimer;
 	sf::Clock updateTimer;
