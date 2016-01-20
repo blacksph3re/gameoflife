@@ -17,7 +17,6 @@
 #include "Snake.h"
 #include "RLEParser.h"
 
-#define PARSE_CMD
 #ifdef PARSE_CMD
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
