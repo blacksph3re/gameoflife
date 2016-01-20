@@ -11,15 +11,69 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string>
+#include <experimental/optional>
 #include "Board.h"
 #include "HelpText.h"
 #include "Snake.h"
+#include "RLEParser.h"
+
+#define PARSE_CMD
+#ifdef PARSE_CMD
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+#endif
 
 int main(int argc, char* argv[]) {
-	// Read the initial board size from command line parameters (if given)
+	// Use boost to read command line parameters, if wanted
 	int boardsize = 50;
-	if(argc >= 2)
-		boardsize = std::stoi(argv[1]);
+	float updateMultiplicator=1.0f;
+	std::experimental::optional<std::string> rleFile;
+
+
+#ifdef PARSE_CMD
+	try
+	{
+		po::options_description desc("Allowed options");
+		desc.add_options()
+	    								("help", "produce help message")
+										("boardsize", po::value<int>(), "the initial size of the board in both dimensions")
+										("updatemultiplicator", po::value<float>(), "a multiplicator for the update frequency, e.G. 2 would be twice as fast updating")
+										("load-rle", po::value<std::string>(), "a rle file to load on program start")
+										;
+
+		po::positional_options_description p;
+		p.add("load-rle", -1);
+
+		po::variables_map vm;
+
+		po::store(po::command_line_parser(argc, argv).
+				options(desc).positional(p).run(), vm);
+
+		po::notify(vm);
+
+		if (vm.count("help"))
+		{
+			std::cout << desc << std::endl;
+			return 1;
+		}
+
+		if (vm.count("boardsize"))
+			boardsize = vm["boardsize"].as<int>();
+
+		if(vm.count("updatemultiplicator"))
+			updateMultiplicator = vm["updatemultiplicator"].as<float>();
+
+		if(vm.count("load-rle"))
+			rleFile = vm["load-rle"].as<std::string>();
+	}
+	catch(const po::error& ex)
+	{
+		std::cerr << ex.what() << std::endl;
+		return -1;
+	}
+
+#endif
+
 
 	// Some initialistion work
 	srand (time(NULL));
@@ -27,8 +81,12 @@ int main(int argc, char* argv[]) {
 	Board board(boardsize, 768);
 	Snake snake;
 
+
 	HelpText helpText;
-	helpText.init(board, snake);
+	helpText.init(board, snake, updateMultiplicator);
+
+	if(rleFile)
+		RLEParser::parseFile(*rleFile, board);
 
 
 	sf::Clock snakeTimer;
@@ -85,8 +143,12 @@ int main(int argc, char* argv[]) {
 					board.shrink();
 					break;
 
-				case sf::Keyboard::G:
-					board.createGliderGun();
+				case sf::Keyboard::I:
+					updateMultiplicator *= 2;
+					break;
+
+				case sf::Keyboard::D:
+					updateMultiplicator /= 2;
 					break;
 
 				case sf::Keyboard::S:
@@ -130,7 +192,7 @@ int main(int argc, char* argv[]) {
 		/************************************/
 		// Update-Phase
 
-		if(updateTimer.getElapsedTime() > sf::seconds(0.5))
+		if(updateTimer.getElapsedTime() > sf::seconds(0.5*(1/updateMultiplicator)))
 		{
 			updateTimer.restart();
 			board.update();
@@ -138,7 +200,7 @@ int main(int argc, char* argv[]) {
 		}
 		helpText.update(board.getScreenSize(), sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
 
-		if(snakeTimer.getElapsedTime() > sf::seconds(0.2))
+		if(snakeTimer.getElapsedTime() > sf::seconds(0.2*(1/updateMultiplicator)))
 		{
 			snakeTimer.restart();
 			snake.update(board);

@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include "HelpText.h"
+#include "RLEParser.h"
+#include "tinyfiledialogs.h"
 
 HelpText::HelpText()
 {}
@@ -15,7 +17,7 @@ HelpText::HelpText()
 HelpText::~HelpText()
 {}
 
-bool HelpText::init(Board& board, Snake& snake)
+bool HelpText::init(Board& board, Snake& snake, float& updateMultiplicator)
 {
 	// Load the font
 	if(!defaultFont.loadFromFile("YanoneKaffeesatz-Regular.ttf"))
@@ -27,9 +29,16 @@ bool HelpText::init(Board& board, Snake& snake)
 	textToRender.emplace_back(sf::Text("(R) - Random population", defaultFont), [&](){board.randomize();});
 	textToRender.emplace_back(sf::Text("(PgUp) - Increase size", defaultFont), [&](){board.grow();});
 	textToRender.emplace_back(sf::Text("(PgDown) - Decrease size", defaultFont), [&](){board.shrink();});
-	textToRender.emplace_back(sf::Text("(G) - Create Glider Gun", defaultFont), [&](){board.createGliderGun();});
+	textToRender.emplace_back(sf::Text("(I) - Increase simulation speed", defaultFont), [&](){updateMultiplicator*=2;});
+	textToRender.emplace_back(sf::Text("(D) - Decrease simulation speed", defaultFont), [&](){updateMultiplicator/=2;});
 	textToRender.emplace_back(sf::Text("(S) - Toggle Snake", defaultFont), [&](){snake.toggleActive();});
 	textToRender.emplace_back(sf::Text("(V) - Toggle Vital Snake", defaultFont), [&](){board.toggleVitalSnake();});
+	textToRender.emplace_back(sf::Text("Load RLE File", defaultFont), [&](){
+		char const *x[] = {"*.rle"};
+		try{
+			RLEParser::parseFile(tinyfd_openFileDialog("Open RLE", "", 1, x , "RLE Files", 0), board);
+		}catch(...){}
+	});
 
 	// Set some more properties
 	for(auto& i : textToRender)

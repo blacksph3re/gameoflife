@@ -33,7 +33,7 @@ public:
 	 * Initialize the help text
 	 * The board reference is needed to bind the functionality to their texts
 	 */
-	bool init(Board& board, Snake& snake);
+	bool init(Board& board, Snake& snake, float& updateMultiplicator);
 
 	/**
 	 * Process a mouseclick on window coordinates x and y

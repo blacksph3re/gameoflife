@@ -66,11 +66,6 @@ public:
 	 */
 	void grow();
 
-	/**
-	 * Creates a Gospel's Glider Gun if the field is big enough
-	 */
-	void createGliderGun();
-
 	/************************************/
 	// Other methods
 
@@ -88,6 +83,11 @@ public:
 	 * Returns the fieldSize, meaning the number of fields in each direction
 	 */
 	int getFieldSize() const {return fieldSize;}
+
+	/**
+	 * Sets the field size and clears the field
+	 */
+	void setFieldSize(int size);
 
 	/**
 	 * Returns the field on a given position

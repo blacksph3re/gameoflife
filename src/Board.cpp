@@ -58,18 +58,24 @@ void Board::update()
 	{
 		for(int y=0; y<fieldSize; y++)
 		{
+			// Precalculate indices
+			int left = (x-1+fieldSize)%fieldSize;
+			int right = (x+1+fieldSize)%fieldSize;
+			int top = (y-1+fieldSize)%fieldSize;
+			int bottom = (y+1+fieldSize)%fieldSize;
+
 			// Count in the copied field, so the real one can be updated
 			// To implement the rule of leaving one side means entering the other, use modulo on index calculation
 			// invoke the test-method on each of the fields and add that to the total count
 			int count=0;
-			count += test(copied[(x-1+fieldSize)%fieldSize][(y-1+fieldSize)%fieldSize]);
-			count += test(copied[x]              [(y-1+fieldSize)%fieldSize]);
-			count += test(copied[(x+1+fieldSize)%fieldSize][(y-1+fieldSize)%fieldSize]);
-			count += test(copied[(x-1+fieldSize)%fieldSize][y]);
-			count += test(copied[(x+1+fieldSize)%fieldSize][y]);
-			count += test(copied[(x-1+fieldSize)%fieldSize][(y+1+fieldSize)%fieldSize]);
-			count += test(copied[x]              [(y+1+fieldSize)%fieldSize]);
-			count += test(copied[(x+1+fieldSize)%fieldSize][(y+1+fieldSize)%fieldSize]);
+			count += test(copied[left] [top]);
+			count += test(copied[x]    [top]);
+			count += test(copied[right][top]);
+			count += test(copied[left] [y]);
+			count += test(copied[right][y]);
+			count += test(copied[left] [bottom]);
+			count += test(copied[x]    [bottom]);
+			count += test(copied[right][bottom]);
 
 			// Then apply the rules
 			fields[x][y].update(count);
@@ -214,6 +220,24 @@ void Board::grow()
 	fullRepaint = true;
 }
 
+void Board::setFieldSize(int size)
+{
+	fieldSize = size;
+
+	// Reset the fields
+	fields.clear();
+	fields.reserve(fieldSize);
+	for(int x=0; x<fieldSize; x++)
+	{
+		fields.emplace_back();
+		fields[x].reserve(fieldSize);
+		for(int y=0; y<fieldSize; y++)
+			fields[x].emplace_back();
+	}
+
+	fullRepaint = true;
+}
+
 void Board::setScreenSize(float newScreenSize)
 {
 	screenSize = newScreenSize;
@@ -226,68 +250,3 @@ void Board::setScreenSize(float newScreenSize)
 	fullRepaint = true;
 }
 
-void Board::createGliderGun()
-{
-	// Avoid index out of bounds errors
-	if(fieldSize<39)
-		return;
-
-	// Left box
-	fields[1][5].setState(State::OCCUPIED);
-	fields[1][6].setState(State::OCCUPIED);
-	fields[2][5].setState(State::OCCUPIED);
-	fields[2][6].setState(State::OCCUPIED);
-
-	// Sattelite-dish like thing
-	fields[11][5].setState(State::OCCUPIED);
-	fields[11][6].setState(State::OCCUPIED);
-	fields[11][7].setState(State::OCCUPIED);
-	fields[11][5].setState(State::OCCUPIED);
-	fields[12][4].setState(State::OCCUPIED);
-	fields[12][8].setState(State::OCCUPIED);
-	fields[13][3].setState(State::OCCUPIED);
-	fields[13][9].setState(State::OCCUPIED);
-	fields[14][3].setState(State::OCCUPIED);
-	fields[14][9].setState(State::OCCUPIED);
-
-	fields[15][6].setState(State::OCCUPIED);
-
-	fields[16][4].setState(State::OCCUPIED);
-	fields[16][8].setState(State::OCCUPIED);
-	fields[17][5].setState(State::OCCUPIED);
-	fields[17][6].setState(State::OCCUPIED);
-	fields[17][7].setState(State::OCCUPIED);
-	fields[18][6].setState(State::OCCUPIED);
-
-	// Space-invader alien
-	fields[21][3].setState(State::OCCUPIED);
-	fields[21][4].setState(State::OCCUPIED);
-	fields[21][5].setState(State::OCCUPIED);
-	fields[22][3].setState(State::OCCUPIED);
-	fields[22][4].setState(State::OCCUPIED);
-	fields[22][5].setState(State::OCCUPIED);
-	fields[23][2].setState(State::OCCUPIED);
-	fields[23][6].setState(State::OCCUPIED);
-
-	fields[25][1].setState(State::OCCUPIED);
-	fields[25][2].setState(State::OCCUPIED);
-
-	fields[25][6].setState(State::OCCUPIED);
-	fields[25][7].setState(State::OCCUPIED);
-
-	// Right box
-	fields[35][3].setState(State::OCCUPIED);
-	fields[35][4].setState(State::OCCUPIED);
-	fields[36][3].setState(State::OCCUPIED);
-	fields[36][4].setState(State::OCCUPIED);
-
-	// Eater
-	fields[35][21].setState(State::OCCUPIED);
-	fields[35][22].setState(State::OCCUPIED);
-	fields[36][21].setState(State::OCCUPIED);
-	fields[37][22].setState(State::OCCUPIED);
-	fields[37][23].setState(State::OCCUPIED);
-	fields[37][24].setState(State::OCCUPIED);
-	fields[38][24].setState(State::OCCUPIED);
-
-}
